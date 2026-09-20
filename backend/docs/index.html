@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>NFL Edge — Weekly Betting Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: { 900:'#0d0d1a',800:'#12122a',700:'#1a1a2e',600:'#22223a',500:'#2d2d4e',400:'#3a3a5c' },
+              surface: { primary:'#1a1a2e',hover:'#22223a',border:'#2d2d4e',borderLight:'#3a3a5c' },
+              txt: { primary:'#f1f5f9',secondary:'#cbd5e1',muted:'#64748b',dim:'#475569' },
+              accent: { blue:'#3b82f6',blueHover:'#2563eb',blueMuted:'#1e3a5f' },
+              edge: { green:'#22c55e',greenBg:'rgba(34,197,94,0.12)',yellow:'#f59e0b',yellowBg:'rgba(245,158,11,0.12)',red:'#ef4444',redBg:'rgba(239,68,68,0.12)' },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg-base:#0d0d1a;--card-bg:#1a1a2e;--border:#2d2d4e;--accent:#3b82f6;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444; }
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-base);color:#f1f5f9;min-height:100vh;}
+      @keyframes pulse-live{0%,100%{opacity:1}50%{opacity:.4}} .live-dot{animation:pulse-live 1.5s ease-in-out infinite}
+      @keyframes skeleton-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+      .skeleton{background:linear-gradient(90deg,#1a1a2e 25%,#2d2d4e 50%,#1a1a2e 75%);background-size:200% 100%;animation:skeleton-shimmer 1.5s ease-in-out infinite;border-radius:8px;}
+      @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}} .card-appear{animation:fadeIn .35s ease-out both}
+      @keyframes slideDown{from{max-height:0;opacity:0}to{max-height:400px;opacity:1}} .signal-expand{animation:slideDown .3s ease-out forwards;overflow:hidden}
+      @keyframes toastIn{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+      @keyframes toastOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-100%);opacity:0}}
+      .toast-in{animation:toastIn .3s ease-out forwards} .toast-out{animation:toastOut .3s ease-in forwards}
+      .progress-bar-fill{transition:width .8s cubic-bezier(.4,0,.2,1)}
+      .week-btn:active{transform:scale(.92)} .week-btn{transition:transform .1s ease,background-color .15s ease}
+      input::placeholder{color:#64748b} input:focus{outline:none}
+      .card-hot-border{border-bottom:2px solid var(--accent)}
+      ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#2d2d4e;border-radius:3px}
+      .signal-bar-track{background:#2d2d4e;height:4px;border-radius:2px;overflow:hidden} .signal-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+      .disclaimer{font-size:11px;color:#475569;text-align:center;padding:8px 16px;border-top:1px solid #1a1a2e;}
+    </style>
+</head>
+<body class="bg-bg-900 min-h-screen">
+    <div id="toast-container-tc01" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- LOGIN -->
+    <div id="login-screen-ls01" class="min-h-screen items-center justify-center px-4" style="display:flex">
+      <div class="w-full max-w-sm">
+        <div class="bg-surface-primary border border-surface-border rounded-2xl p-8 shadow-2xl shadow-black/40">
+          <div class="flex justify-center mb-6">
+            <svg width="64" height="72" viewBox="0 0 64 72" fill="none">
+              <path d="M32 2 L58 14 L58 40 Q58 60 32 70 Q6 60 6 40 L6 14 Z" fill="#1a1a2e" stroke="#3b82f6" stroke-width="2.5"/>
+              <text x="32" y="34" text-anchor="middle" fill="#f1f5f9" font-family="Inter,sans-serif" font-weight="800" font-size="11">NFL</text>
+              <text x="32" y="50" text-anchor="middle" fill="#3b82f6" font-family="Inter,sans-serif" font-weight="700" font-size="9">EDGE</text>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-center text-txt-primary mb-1">NFL Edge</h1>
+          <p class="text-sm text-txt-muted text-center mb-8">Sharp Picks. Real Data.</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-txt-muted uppercase tracking-wider mb-2">Username</label>
+              <input id="login-user-lu01" type="text" placeholder="Enter username" class="w-full bg-bg-800 border border-surface-border rounded-xl px-4 py-3 text-base text-txt-primary focus:border-accent-blue transition-colors" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-txt-muted uppercase tracking-wider mb-2">Password</label>
+              <input id="login-pass-lp01" type="password" placeholder="Enter password" class="w-full bg-bg-800 border border-surface-border rounded-xl px-4 py-3 text-base text-txt-primary focus:border-accent-blue transition-colors" />
+            </div>
+            <div id="login-error-le01" class="text-sm text-edge-red bg-edge-redBg rounded-lg px-4 py-2.5" style="display:none"></div>
+            <button id="login-btn-lb01" class="w-full bg-accent-blue hover:bg-accent-blueHover text-white font-semibold rounded-xl px-4 py-3.5 transition-colors text-base min-h-[48px]">Sign In</button>
+          </div>
+        </div>
+        <p class="disclaimer mt-4">For informational purposes only. Not financial advice.</p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-ds01" class="min-h-screen flex-col" style="display:none">
+      <header class="sticky top-0 z-50 bg-bg-900/95 backdrop-blur-md border-b border-surface-border">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
+          <div class="flex items-center gap-2 shrink-0">
+            <svg width="28" height="32" viewBox="0 0 64 72" fill="none" class="hidden sm:block">
+              <path d="M32 2 L58 14 L58 40 Q58 60 32 70 Q6 60 6 40 L6 14 Z" fill="#1a1a2e" stroke="#3b82f6" stroke-width="2.5"/>
+              <text x="32" y="38" text-anchor="middle" fill="#f1f5f9" font-family="Inter,sans-serif" font-weight="800" font-size="14">N</text>
+            </svg>
+            <span class="text-sm sm:text-base font-bold tracking-wide text-txt-primary">NFL <span class="text-accent-blue">EDGE</span></span>
+          </div>
+          <div class="flex items-center gap-1 sm:gap-2">
+            <button id="week-prev-wp01" class="week-btn p-2 rounded-lg hover:bg-surface-primary text-txt-muted hover:text-txt-primary transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+            <span id="week-label-wl01" class="text-sm sm:text-base font-semibold text-txt-primary min-w-[80px] sm:min-w-[100px] text-center tabular-nums">WEEK 2</span>
+            <button id="week-next-wn01" class="week-btn p-2 rounded-lg hover:bg-surface-primary text-txt-muted hover:text-txt-primary transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+          </div>
+          <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span class="text-xs sm:text-sm font-medium text-txt-muted tabular-nums hidden sm:inline">2026</span>
+            <button id="refresh-btn-rb01" class="p-2 rounded-lg hover:bg-surface-primary text-txt-muted hover:text-txt-primary transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center" title="Refresh"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+            <button id="logout-btn-lo01" class="p-2 rounded-lg hover:bg-surface-primary text-txt-muted hover:text-edge-red transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center" title="Logout"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+      </header>
+      <main class="flex-1 max-w-7xl mx-auto w-full px-4 md:px-6 py-6">
+        <div id="loading-state-lsk1" style="display:none">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <div class="skeleton h-72 rounded-2xl"></div><div class="skeleton h-72 rounded-2xl"></div>
+            <div class="skeleton h-72 rounded-2xl"></div><div class="skeleton h-72 rounded-2xl"></div>
+          </div>
+        </div>
+        <div id="error-state-es01" style="display:none">
+          <div class="flex flex-col items-center justify-center py-20">
+            <i data-lucide="wifi-off" class="w-12 h-12 text-txt-dim mb-4"></i>
+            <p id="error-message-em01" class="text-lg text-txt-muted mb-4">Something went wrong</p>
+            <button id="retry-btn-rt01" class="bg-accent-blue hover:bg-accent-blueHover text-white font-medium rounded-xl px-6 py-3 transition-colors min-h-[44px]">Try Again</button>
+          </div>
+        </div>
+        <div id="empty-state-emp1" style="display:none">
+          <div class="flex flex-col items-center justify-center py-20">
+            <i data-lucide="calendar-x" class="w-12 h-12 text-txt-dim mb-4"></i>
+            <p id="empty-message-epm1" class="text-lg text-txt-muted">No games found for this week</p>
+          </div>
+        </div>
+        <div id="games-grid-gg01" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"></div>
+      </main>
+      <footer class="py-4 mt-auto text-center border-t border-surface-border/50">
+        <p class="disclaimer">For informational purposes only. Not financial advice. | NFL Edge &copy; 2026</p>
+      </footer>
+    </div>
+
+<script>
+const API_BASE='https://nfl-edge.fly.dev';
+const STATE={token:localStorage.getItem('nfl_edge_token')||null,week:2,season:2026,games:[],refreshTimer:null,isLoading:false};
+const $=(id)=>document.getElementById(id);
+const loginScreen=$('login-screen-ls01'),dashboard=$('dashboard-ds01');
+const loginUser=$('login-user-lu01'),loginPass=$('login-pass-lp01');
+const loginError=$('login-error-le01'),loginBtn=$('login-btn-lb01');
+const weekLabel=$('week-label-wl01'),gamesGrid=$('games-grid-gg01');
+const loadingState=$('loading-state-lsk1'),errorState=$('error-state-es01');
+const errorMessage=$('error-message-em01'),emptyState=$('empty-state-emp1');
+const emptyMessage=$('empty-message-epm1');
+
+function refreshIcons(){if(typeof lucide!=='undefined'&&typeof lucide.createIcons==='function')lucide.createIcons();}
+
+function showToast(message,type='error'){
+  const container=$('toast-container-tc01');
+  const toast=document.createElement('div');
+  const colors={error:'background:#ef4444;color:white',success:'background:#22c55e;color:white',warning:'background:#f59e0b;color:#0d0d1a',info:'background:#3b82f6;color:white'};
+  toast.style.cssText=`pointer-events:auto;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 10px 25px rgba(0,0,0,0.4);${colors[type]||colors.error}`;
+  toast.className='toast-in';toast.textContent=message;container.appendChild(toast);
+  setTimeout(()=>{toast.classList.remove('toast-in');toast.classList.add('toast-out');setTimeout(()=>toast.remove(),300);},4000);
+}
+
+async function login(username,password){
+  loginBtn.disabled=true;loginBtn.textContent='Signing in…';loginError.style.display='none';
+  try{
+    const body=new URLSearchParams();body.append('username',username);body.append('password',password);
+    const res=await fetch(`${API_BASE}/api/auth/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.detail||'Invalid credentials');}
+    const data=await res.json();STATE.token=data.access_token;localStorage.setItem('nfl_edge_token',data.access_token);showDashboard();
+  }catch(e){loginError.textContent=e.message||'Login failed. Please try again.';loginError.style.display='block';}
+  finally{loginBtn.disabled=false;loginBtn.textContent='Sign In';}
+}
+
+function logout(){STATE.token=null;localStorage.removeItem('nfl_edge_token');clearInterval(STATE.refreshTimer);showLogin();}
+
+async function apiFetch(endpoint){
+  const res=await fetch(`${API_BASE}${endpoint}`,{headers:{'Authorization':`Bearer ${STATE.token}`}});
+  if(res.status===401){logout();showToast('Session expired. Please sign in again.','warning');throw new Error('Unauthorized');}
+  if(!res.ok)throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+async function fetchGames(){
+  if(STATE.isLoading)return;STATE.isLoading=true;
+  gamesGrid.innerHTML='';errorState.style.display='none';emptyState.style.display='none';loadingState.style.display='block';
+  try{
+    const data=await apiFetch(`/api/games/?season=${STATE.season}&week=${STATE.week}`);
+    STATE.games=data.games||[];renderGames();
+  }catch(e){
+    if(e.message!=='Unauthorized'){loadingState.style.display='none';errorMessage.textContent='Connection error — check your network';errorState.style.display='block';showToast('Connection error','error');}
+  }finally{STATE.isLoading=false;}
+}
+
+function sortGames(g){const o={LIVE:0,SCHEDULED:1,FINAL:2};return[...g].sort((a,b)=>{const sa=o[a.status]??1,sb=o[b.status]??1;if(sa!==sb)return sa-sb;if(a.status==='SCHEDULED'&&b.status==='SCHEDULED')return new Date(a.game_time)-new Date(b.game_time);return 0;});}
+function formatGameTime(iso){try{const d=new Date(iso),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],day=days[d.getDay()],h=d.getHours(),m=d.getMinutes(),ampm=h>=12?'PM':'AM',h12=h%12||12,mm=m.toString().padStart(2,'0');return`${day} ${h12}:${mm} ${ampm} ET`;}catch{return'—';}}
+function edgeColor(s){if(s==null)return{color:'#64748b',bg:'rgba(100,116,139,0.1)'};if(s>=68)return{color:'#22c55e',bg:'rgba(34,197,94,0.12)'};if(s>=41)return{color:'#f59e0b',bg:'rgba(245,158,11,0.12)'};return{color:'#ef4444',bg:'rgba(239,68,68,0.12)'};}
+function confidenceClass(c){if(!c)return{text:'—',color:'#64748b',bg:'rgba(100,116,139,0.15)'};const u=c.toUpperCase();if(u==='HIGH')return{text:'HIGH',color:'#22c55e',bg:'rgba(34,197,94,0.15)'};if(u==='MEDIUM')return{text:'MED',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};return{text:'LOW',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};}
+function formatSpread(v){if(v==null)return'—';return v>0?`+${v}`:`${v}`;}
+function formatML(v){if(v==null)return'—';return v>0?`+${v}`:`${v}`;}
+function formatJuice(v){if(v==null)return'-110';return v>0?`+${v}`:`${v}`;}
+function getRecText(game){const rec=game.edge?.recommendation;if(!rec||rec==='none'||rec==='NONE')return null;const r=rec.toLowerCase();if(r.includes('home')&&r.includes('spread'))return`${game.home_team} SPREAD`;if(r.includes('away')&&r.includes('spread'))return`${game.away_team} SPREAD`;if(r.includes('over'))return'OVER';if(r.includes('under'))return'UNDER';if(r.includes('investigate'))return'INVESTIGATE';return rec.toUpperCase();}
+function isHot(g){const r=g.edge?.recommendation;return r&&r.toLowerCase()!=='none'&&r.toLowerCase()!=='investigate'&&(g.edge?.composite_score||0)>=60;}
+
+function renderGames(){
+  loadingState.style.display='none';const sorted=sortGames(STATE.games);
+  if(sorted.length===0){emptyMessage.textContent=`No games found for Week ${STATE.week}`;emptyState.style.display='block';return;}
+  gamesGrid.innerHTML='';sorted.forEach((g,i)=>gamesGrid.appendChild(buildCard(g,i)));refreshIcons();
+}
+
+function buildCard(game,index){
+  const el=document.createElement('div');
+  const edge=game.edge||{},odds=game.odds||{},weather=game.weather||{};
+  const ec=edgeColor(edge.composite_score),cc=confidenceClass(edge.confidence),rec=getRecText(game),hot=isHot(game);
+  el.className=`card-appear bg-surface-primary border border-surface-border rounded-2xl overflow-hidden${hot?' card-hot-border':''}`;
+  el.style.animationDelay=`${index*.06}s`;
+  let statusHTML='';
+  if(game.status==='LIVE')statusHTML=`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:9999px;background:rgba(34,197,94,0.12);color:#22c55e"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e" class="live-dot"></span>LIVE</span>`;
+  else if(game.status==='FINAL')statusHTML=`<span style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:9999px;background:#22223a;color:#64748b">FINAL</span>`;
+  else statusHTML=`<span style="font-size:12px;color:#64748b">${formatGameTime(game.game_time)}</span>`;
+  let scoreHTML='';
+  if(game.status==='FINAL'||game.status==='LIVE')scoreHTML=`<div style="display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums"><span style="color:${(game.away_score||0)>(game.home_score||0)?'#f1f5f9':'#64748b'}">${game.away_score??'—'}</span><span style="color:#475569;font-size:14px">–</span><span style="color:${(game.home_score||0)>(game.away_score||0)?'#f1f5f9':'#64748b'}">${game.home_score??'—'}</span></div>`;
+  const hr=game.home_ranking||{},ar=game.away_ranking||{};
+  const homeRankText=hr.overall_rank?`#${hr.overall_rank} (${hr.wins??0}-${hr.losses??0})`:'';
+  const awayRankText=ar.overall_rank?`#${ar.overall_rank} (${ar.wins??0}-${ar.losses??0})`:'';
+  const inj=game.injury_summary||{},hi=inj.home||{},ai=inj.away||{};
+  const homeQB=hi.qb_status&&!['healthy','active'].includes(hi.qb_status.toLowerCase());
+  const awayQB=ai.qb_status&&!['healthy','active'].includes(ai.qb_status.toLowerCase());
+  const signals=[{l:'LINE',v:edge.line_move_score},{l:'SHARP',v:edge.sharp_money_score},{l:'WX',v:edge.weather_impact_score},{l:'FADE',v:edge.public_fade_score},{l:'PWR',v:edge.power_ranking_score},{l:'INJ',v:edge.injury_impact_score}];
+  const notes=Array.isArray(edge.notes)?edge.notes:(typeof edge.notes==='string'&&edge.notes?[edge.notes]:[]);
+  let recHTML='';
+  if(rec&&rec!=='INVESTIGATE')recHTML=`<span style="display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:4px 10px;border-radius:9999px;background:${ec.bg};color:${ec.color}">${rec}</span>`;
+  else if(rec==='INVESTIGATE')recHTML=`<span style="display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:4px 10px;border-radius:9999px;background:#22223a;color:#64748b">INVESTIGATE</span>`;
+  const uid=`sig-${game.id||index}`;
+  el.innerHTML=`
+    <div style="padding:16px 16px 12px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
+            <span style="font-size:17px;font-weight:700;color:#f1f5f9">${game.away_team}</span>
+            <span style="font-size:12px;color:#475569">@</span>
+            <span style="font-size:17px;font-weight:700;color:#f1f5f9">${game.home_team}</span>
+          </div>
+          ${awayRankText||homeRankText?`<div style="display:flex;gap:12px;margin-top:4px;font-size:12px;color:#64748b;font-variant-numeric:tabular-nums">${awayRankText?`<span>${game.away_team} ${awayRankText}</span>`:''} ${homeRankText?`<span>${game.home_team} ${homeRankText}</span>`:''}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${statusHTML}${scoreHTML}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:#64748b;margin-top:4px">
+        ${weather.wind_mph!=null?`<span><i data-lucide="wind" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></i> ${weather.wind_mph} mph</span>`:''}
+        ${weather.temp_f!=null?`<span>${weather.temp_f}°F</span>`:''}
+        ${weather.condition_desc?`<span>${weather.condition_desc}</span>`:''}
+        ${awayQB?`<span style="color:#ef4444"><i data-lucide="alert-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></i> ${game.away_team} QB: ${ai.qb_status}</span>`:''}
+        ${homeQB?`<span style="color:#ef4444"><i data-lucide="alert-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></i> ${game.home_team} QB: ${hi.qb_status}</span>`:''}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #2d2d4e4d;border-bottom:1px solid #2d2d4e4d">
+      <div style="padding:10px 12px;text-align:center;border-right:1px solid #2d2d4e4d">
+        <div style="font-size:10px;font-weight:500;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Spread</div>
+        <div style="font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums">${game.away_team} ${formatSpread(odds.away_spread)} <span style="color:#475569">(${formatJuice(odds.away_spread_juice)})</span></div>
+        <div style="font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums">${game.home_team} ${formatSpread(odds.home_spread)} <span style="color:#475569">(${formatJuice(odds.home_spread_juice)})</span></div>
+      </div>
+      <div style="padding:10px 12px;text-align:center;border-right:1px solid #2d2d4e4d">
+        <div style="font-size:10px;font-weight:500;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Total</div>
+        <div style="font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums">O/U ${odds.total??'—'}</div>
+        <div style="font-size:10px;color:#475569;font-variant-numeric:tabular-nums">${formatJuice(odds.over_juice)} / ${formatJuice(odds.under_juice)}</div>
+      </div>
+      <div style="padding:10px 12px;text-align:center">
+        <div style="font-size:10px;font-weight:500;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">ML</div>
+        <div style="font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums">${game.away_team} ${formatML(odds.away_ml)}</div>
+        <div style="font-size:12px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums">${game.home_team} ${formatML(odds.home_ml)}</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px;font-weight:900;color:${ec.color};font-variant-numeric:tabular-nums">${edge.composite_score??'—'}</span>
+          <span style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.05em;line-height:1.4">Edge<br>Score</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:9999px;background:${cc.bg};color:${cc.color}">${cc.text}</span>
+          ${recHTML}
+        </div>
+      </div>
+      <div style="width:100%;height:6px;border-radius:3px;background:#2d2d4e;overflow:hidden;margin-bottom:8px">
+        <div class="progress-bar-fill" style="height:100%;border-radius:3px;width:${edge.composite_score??0}%;background:${ec.color}"></div>
+      </div>
+      ${hot?`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:${ec.color}">🔥 Sharp action on ${rec}</div>`:''}
+    </div>
+    <div style="border-top:1px solid #2d2d4e4d">
+      <button class="signal-toggle" data-target="${uid}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:12px;font-weight:500;color:#64748b;background:none;border:none;cursor:pointer;min-height:44px;transition:color .15s">
+        <span>Signal Breakdown</span><i data-lucide="chevron-down" style="width:16px;height:16px;transition:transform .2s" class="signal-chevron"></i>
+      </button>
+      <div id="${uid}" style="display:none;padding:0 16px 12px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          ${signals.map(s=>{const sc=edgeColor(s.v);return`<div style="text-align:center"><div style="font-size:10px;color:#475569;text-transform:uppercase;margin-bottom:4px">${s.l}</div><div style="font-size:14px;font-weight:700;color:${sc.color};font-variant-numeric:tabular-nums">${s.v??'—'}</div><div class="signal-bar-track" style="margin-top:4px"><div class="signal-bar-fill" style="width:${s.v??0}%;background:${sc.color}"></div></div></div>`;}).join('')}
+        </div>
+      </div>
+    </div>
+    ${notes.length>0?`<div style="border-top:1px solid #2d2d4e4d;padding:8px 16px"><ul>${notes.map(n=>`<li style="font-size:12px;color:#64748b;font-style:italic;line-height:1.5">• ${typeof n==='string'?n:JSON.stringify(n)}</li>`).join('')}</ul></div>`:''}
+  `;
+  return el;
+}
+
+function showLogin(){loginScreen.style.display='flex';dashboard.style.display='none';loginUser.value='';loginPass.value='';loginError.style.display='none';}
+function showDashboard(){loginScreen.style.display='none';dashboard.style.display='flex';updateWeekLabel();fetchGames();startAutoRefresh();}
+function updateWeekLabel(){weekLabel.textContent=window.innerWidth<640?`WK ${STATE.week}`:`WEEK ${STATE.week}`;}
+function changeWeek(d){const w=STATE.week+d;if(w<1||w>18)return;STATE.week=w;updateWeekLabel();fetchGames();}
+function startAutoRefresh(){clearInterval(STATE.refreshTimer);STATE.refreshTimer=setInterval(fetchGames,180000);}
+
+if(typeof lucide!=='undefined'&&typeof lucide.createIcons==='function')lucide.createIcons();
+loginBtn.addEventListener('click',()=>{const u=loginUser.value.trim(),p=loginPass.value.trim();if(!u||!p){loginError.textContent='Please enter both username and password.';loginError.style.display='block';return;}login(u,p);});
+loginPass.addEventListener('keydown',e=>{if(e.key==='Enter')loginBtn.click();});
+loginUser.addEventListener('keydown',e=>{if(e.key==='Enter')loginPass.focus();});
+$('week-prev-wp01').addEventListener('click',()=>changeWeek(-1));
+$('week-next-wn01').addEventListener('click',()=>changeWeek(1));
+$('refresh-btn-rb01').addEventListener('click',()=>{fetchGames();showToast('Refreshing…','info');});
+$('logout-btn-lo01').addEventListener('click',logout);
+$('retry-btn-rt01').addEventListener('click',fetchGames);
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.signal-toggle');if(!t)return;
+  const el=document.getElementById(t.dataset.target);if(!el)return;
+  const ch=t.querySelector('.signal-chevron'),hidden=el.style.display==='none'||el.style.display==='';
+  el.style.display=hidden?'block':'none';if(ch)ch.style.transform=hidden?'rotate(180deg)':'rotate(0deg)';
+});
+window.addEventListener('resize',updateWeekLabel);
+STATE.token?showDashboard():showLogin();
+</script>
+</body>
+</html>
