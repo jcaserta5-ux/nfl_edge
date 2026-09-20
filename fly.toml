@@ -1,0 +1,78 @@
+app = "nfl-edge-api"
+primary_region = "bos"
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+[env]
+  PORT = "8000"
+  DEBUG = "false"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# ── Processes ─────────────────────────────────────────────────────────────────
+# "app" = FastAPI (default)
+# "worker" = Celery worker
+# "beat" = Celery beat scheduler
+
+[[processes]]
+  name = "app"
+  cmd = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+[[processes]]
+  name = "worker"
+  cmd = ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+
+[[processes]]
+  name = "beat"
+  cmd = ["celery", "-A", "app.tasks.celery_app", "beat", "--loglevel=info"]
+
+# ── Health check ──────────────────────────────────────────────────────────────
+[[services]]
+  processes = ["app"]
+  protocol = "tcp"
+  internal_port = 8000
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+    force_https = true
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [services.concurrency]
+    hard_limit = 100
+    soft_limit = 80
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/api/health"
+    protocol = "http"
