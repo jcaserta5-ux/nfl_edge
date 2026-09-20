@@ -155,7 +155,7 @@ function showToast(message,type='error'){
 async function login(EMAIL,password){
   loginBtn.disabled=true;loginBtn.textContent='Signing in…';loginError.style.display='none';
   try{
-    const body=new URLSearchParams();body.append('EMAIL',EMAIL);body.append('password',password);
+    const body=new URLSearchParams();body.append('username',EMAIL);body.append('password',password);
     const res=await fetch(`${API_BASE}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.detail||'Invalid credentials');}
     const data=await res.json();STATE.token=data.access_token;localStorage.setItem('nfl_edge_token',data.access_token);showDashboard();
