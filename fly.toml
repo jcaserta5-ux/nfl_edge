@@ -1,11 +1,11 @@
-app = "nfl-edge"
+﻿app = "nfl-edge"
 primary_region = "iad"
 kill_signal = "SIGINT"
 kill_timeout = "5s"
 
 [build]
   dockerfile = "backend/Dockerfile"
-  context = "backend"
+  context = "."
 
 [env]
   PORT = "8000"
