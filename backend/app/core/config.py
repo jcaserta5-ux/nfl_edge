@@ -23,39 +23,40 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://redis:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/2"
 
-    # ── ESPN (no API key required) ────────────────────────────────────────────
-    # Scoreboard — DraftKings odds via provider 1002
+    # â”€â”€ ESPN (no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Scoreboard â€” DraftKings odds via provider 1002
     ESPN_SCOREBOARD_URL: str = (
         "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
     )
-    # Core API — per-event odds + line movement
+    # Core API â€” per-event odds + line movement
     ESPN_CORE_URL: str = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl"
     # Preferred odds provider IDs (1002=DraftKings, 1004=ESPN BET fallback)
     ESPN_ODDS_PROVIDER_IDS: List[str] = ["1002", "1004"]
 
-    # ── Action Network (no API key required) ──────────────────────────────────
+    # â”€â”€ Action Network (no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Free public-money consensus data (bet %, money %, bet counts)
     AN_SCOREBOARD_URL: str = "https://api.actionnetwork.com/web/v1/scoreboard/nfl"
     AN_BOOK_ID: str = "15"  # 15 = DraftKings on Action Network
 
-    # ── Public money scraper fallback (your own scraper) ─────────────────────
+    # â”€â”€ Public money scraper fallback (your own scraper) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     SCRAPER_SOURCE: str = "file"         # "file" | "endpoint"
     SCRAPER_FILE_PATH: str = "/data/public_money.json"
     SCRAPER_ENDPOINT_URL: str = ""
     SCRAPER_API_KEY: str = ""
 
-    # ── Open-Meteo weather (no API key required) ──────────────────────────────
+    # â”€â”€ Open-Meteo weather (no API key required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     OPEN_METEO_BASE_URL: str = "https://api.open-meteo.com/v1"
 
-    # ── Auth ──────────────────────────────────────────────────────────────────
+    # â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     INVITE_CODE_LENGTH: int = 16
     MAX_USERS: int = 20
 
-    # ── CORS ──────────────────────────────────────────────────────────────────
+    # â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "https://nfl-edge.vercel.app",
         "https://jcaserta5-ux.github.io",
+        "https://nfl-edge-ui.fly.dev",
     ]
 
     class Config:
