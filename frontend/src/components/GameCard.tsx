@@ -1,5 +1,5 @@
-﻿import clsx from 'clsx';
-import { Wind, Thermometer, Droplets, Zap, AlertTriangle } from 'lucide-react';
+import clsx from 'clsx';
+import { Wind, Thermometer, Droplets, Zap, AlertTriangle, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -91,7 +91,7 @@ export function GameCard({ game }: Props) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="text-xl font-black">{game.away_team}</div>
-            <div className="text-xs text-gray-500 font-semibold tracking-widest">(A)</div>
+            <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase bg-gray-800 rounded px-1.5 py-0.5 inline-block mt-0.5">Away</div>
             {awayRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">
                 {rankBadge(awayRank.overall_rank)} FPI
@@ -129,7 +129,7 @@ export function GameCard({ game }: Props) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="text-xl font-black">{game.home_team}</div>
-            <div className="text-xs text-gray-500 font-semibold tracking-widest">(H)</div>
+            <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase bg-gray-800 rounded px-1.5 py-0.5 inline-block mt-0.5">Home</div>
             {homeRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">
                 {rankBadge(homeRank.overall_rank)} FPI
@@ -168,23 +168,43 @@ export function GameCard({ game }: Props) {
         {/* Odds row */}
         <div className="grid grid-cols-3 gap-2 text-center mb-3">
           <div className="bg-black/30 rounded-lg p-2">
-            <div className="text-xs text-gray-500 mb-0.5">Spread</div>
-            <div className="text-sm font-mono font-bold">
-              {odds.home_spread != null
-                ? `${odds.home_spread > 0 ? '+' : ''}${odds.home_spread}`
-                : '—'}
+            <div className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1">
+              Spread
+              <span title="Point spread — negative = favorite must win by this margin; positive = underdog can lose by this much and still cover.">
+                <Info className="w-3 h-3 text-gray-600 cursor-help" />
+              </span>
+            </div>
+            <div className="text-xs font-mono space-y-0.5">
+              <div className="flex justify-between px-1">
+                <span className="text-gray-500">{game.away_team}</span>
+                <span className="font-bold text-white">{odds.home_spread != null ? (odds.home_spread > 0 ? `–${odds.home_spread}` : `+${-odds.home_spread}`) : '—'}</span>
+              </div>
+              <div className="flex justify-between px-1">
+                <span className="text-gray-500">{game.home_team}</span>
+                <span className="font-bold text-white">{odds.home_spread != null ? `${odds.home_spread > 0 ? '+' : ''}${odds.home_spread}` : '—'}</span>
+              </div>
             </div>
           </div>
           <div className="bg-black/30 rounded-lg p-2">
-            <div className="text-xs text-gray-500 mb-0.5">Total</div>
+            <div className="text-xs text-gray-500 mb-0.5 flex items-center justify-center gap-1">Total<span title="Over/Under — combined projected points. Bet whether actual total goes over or under this number."><Info className="w-3 h-3 text-gray-600 cursor-help" /></span></div>
             <div className="text-sm font-mono font-bold">{odds.total ?? '—'}</div>
           </div>
           <div className="bg-black/30 rounded-lg p-2">
-            <div className="text-xs text-gray-500 mb-0.5">ML</div>
-            <div className="text-sm font-mono font-bold">
-              {odds.home_ml != null
-                ? `${odds.home_ml > 0 ? '+' : ''}${odds.home_ml}`
-                : '—'}
+            <div className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1">
+              ML
+              <span title="Moneyline — bet on a team to win outright. Negative means you risk that amount to win $100. Positive means a $100 bet wins that amount.">
+                <Info className="w-3 h-3 text-gray-600 cursor-help" />
+              </span>
+            </div>
+            <div className="text-xs font-mono space-y-0.5">
+              <div className="flex justify-between px-1">
+                <span className="text-gray-500">{game.away_team}</span>
+                <span className="font-bold text-white">{odds.away_ml != null ? `${odds.away_ml > 0 ? '+' : ''}${odds.away_ml}` : '—'}</span>
+              </div>
+              <div className="flex justify-between px-1">
+                <span className="text-gray-500">{game.home_team}</span>
+                <span className="font-bold text-white">{odds.home_ml != null ? `${odds.home_ml > 0 ? '+' : ''}${odds.home_ml}` : '—'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -229,7 +249,7 @@ export function GameCard({ game }: Props) {
             <span className="text-sm font-bold text-yellow-300">
               {edge.composite_score?.toFixed(0) ?? 0}
             </span>
-            <span className="text-xs text-gray-500">edge score</span>
+            <span className="text-xs text-gray-500 flex items-center gap-1">edge score<span title="Composite score 0–100 combining line movement, sharp money, public fade, weather, power rankings, and injuries."><Info className="w-3 h-3 text-gray-600 cursor-help" /></span></span>
           </div>
           {rec && rec !== 'none' && (
             <span className="text-xs font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-full px-2 py-0.5">
