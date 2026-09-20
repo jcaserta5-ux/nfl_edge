@@ -1,5 +1,5 @@
 """
-Injury Adapter – ESPN Core API (sports.core.api.espn.com).
+Injury Adapter â€“ ESPN Core API (sports.core.api.espn.com).
 Fetches per-team injuries concurrently; follows $ref URLs for full records.
 """
 from __future__ import annotations
@@ -100,8 +100,8 @@ def compute_injury_impact(home, away):
     for injuries, label in [(home,"home"),(away,"away")]:
         qb_out = next((i for i in injuries if i["is_qb"] and i["status"] in ("Out","Doubtful")), None)
         qb_q   = next((i for i in injuries if i["is_qb"] and i["status"]=="Questionable"), None)
-        if qb_out: notes.append(f"?? {qb_out['athlete_name']} ({qb_out['status']}) – {label} QB")
-        elif qb_q: notes.append(f"?? {qb_q['athlete_name']} (Questionable) – {label} QB watch")
+        if qb_out: notes.append(f"?? {qb_out['athlete_name']} ({qb_out['status']}) â€“ {label} QB")
+        elif qb_q: notes.append(f"?? {qb_q['athlete_name']} (Questionable) â€“ {label} QB watch")
         ko = sum(1 for i in injuries if i["is_key_player"] and i["status"] in ("Out","Doubtful"))
         if ko >= 2: notes.append(f"{label.capitalize()} missing {ko} key players")
     return round(score,1), notes
