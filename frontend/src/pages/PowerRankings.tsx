@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Power Rankings Page
  * Displays all 32 NFL teams sorted by ESPN FPI / standings-derived rank.
  * Supports week selection and sortable columns.
@@ -58,10 +58,10 @@ export default function PowerRankings() {
 
   const sorted = useMemo(() => {
     return [...rankings].sort((a, b) => {
-      let av = a[sortKey] ?? (sortDir === 'asc' ? 9999 : -9999);
-      let bv = b[sortKey] ?? (sortDir === 'asc' ? 9999 : -9999);
+      const av = a[sortKey] ?? (sortDir === 'asc' ? 9999 : -9999);
+      const bv = b[sortKey] ?? (sortDir === 'asc' ? 9999 : -9999);
       if (sortKey === 'fpi_score' || sortKey === 'win_pct' || sortKey === 'point_diff') {
-        // Higher is better — reverse for ascending = best first
+        // Higher is better â€” reverse for ascending = best first
         return sortDir === 'asc' ? bv - av : av - bv;
       }
       // Ranks: lower number = better team
@@ -91,7 +91,7 @@ export default function PowerRankings() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-6">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Link to="/" className="text-gray-400 hover:text-white">
@@ -101,7 +101,7 @@ export default function PowerRankings() {
           <div>
             <h1 className="text-xl font-bold">Power Rankings</h1>
             <p className="text-xs text-gray-500">
-              Season {SEASON} · Week {data?.week ?? week} · Source: {sourceLabel}
+              Season {SEASON} Â· Week {data?.week ?? week} Â· Source: {sourceLabel}
             </p>
           </div>
         </div>
@@ -128,12 +128,12 @@ export default function PowerRankings() {
         </div>
       </div>
 
-      {/* ── Stats strip ───────────────────────────────────────────────────── */}
+      {/* â”€â”€ Stats strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: 'Teams ranked', value: rankings.length || '—' },
+          { label: 'Teams ranked', value: rankings.length || 'â€”' },
           { label: 'Data source', value: sourceLabel },
-          { label: 'Week', value: data?.week ?? '—' },
+          { label: 'Week', value: data?.week ?? 'â€”' },
         ].map(({ label, value }) => (
           <div key={label} className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
             <div className="text-lg font-bold text-emerald-400">{value}</div>
@@ -142,11 +142,11 @@ export default function PowerRankings() {
         ))}
       </div>
 
-      {/* ── Table ─────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {isLoading ? (
         <div className="text-center py-20 text-gray-400">
           <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p>Loading power rankings…</p>
+          <p>Loading power rankingsâ€¦</p>
         </div>
       ) : rankings.length === 0 ? (
         <div className="text-center py-20 text-gray-500">
@@ -208,28 +208,28 @@ export default function PowerRankings() {
                   {/* Record */}
                   <td className="px-4 py-3 text-gray-300 font-mono text-xs">
                     {r.wins != null && r.losses != null
-                      ? `${r.wins}–${r.losses}`
-                      : <span className="text-gray-600">—</span>}
+                      ? `${r.wins}â€“${r.losses}`
+                      : <span className="text-gray-600">â€”</span>}
                   </td>
 
                   {/* Overall rank */}
                   <td className="px-3 py-3 text-right">
                     <span className={rankColor(r.overall_rank)}>
-                      {r.overall_rank ? `#${r.overall_rank}` : '—'}
+                      {r.overall_rank ? `#${r.overall_rank}` : 'â€”'}
                     </span>
                   </td>
 
                   {/* Offensive rank */}
                   <td className="px-3 py-3 text-right">
                     <span className={rankColor(r.offensive_rank)}>
-                      {r.offensive_rank ? `#${r.offensive_rank}` : '—'}
+                      {r.offensive_rank ? `#${r.offensive_rank}` : 'â€”'}
                     </span>
                   </td>
 
                   {/* Defensive rank */}
                   <td className="px-3 py-3 text-right">
                     <span className={rankColor(r.defensive_rank)}>
-                      {r.defensive_rank ? `#${r.defensive_rank}` : '—'}
+                      {r.defensive_rank ? `#${r.defensive_rank}` : 'â€”'}
                     </span>
                   </td>
 
@@ -240,7 +240,7 @@ export default function PowerRankings() {
                         {r.fpi_score > 0 ? '+' : ''}{r.fpi_score.toFixed(1)}
                       </span>
                     ) : (
-                      <span className="text-gray-600">—</span>
+                      <span className="text-gray-600">â€”</span>
                     )}
                   </td>
 
@@ -251,7 +251,7 @@ export default function PowerRankings() {
                         {(r.win_pct * 100).toFixed(0)}%
                       </span>
                     ) : (
-                      <span className="text-gray-600">—</span>
+                      <span className="text-gray-600">â€”</span>
                     )}
                   </td>
 
@@ -262,7 +262,7 @@ export default function PowerRankings() {
                         {r.point_diff > 0 ? '+' : ''}{r.point_diff.toFixed(1)}
                       </span>
                     ) : (
-                      <span className="text-gray-600">—</span>
+                      <span className="text-gray-600">â€”</span>
                     )}
                   </td>
                 </tr>
@@ -272,11 +272,11 @@ export default function PowerRankings() {
         </div>
       )}
 
-      {/* ── Legend ───────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Legend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">
         <span><span className="text-emerald-400 font-bold">Green</span> = Top 8 / positive</span>
-        <span><span className="text-yellow-400">Yellow</span> = 9–16</span>
-        <span><span className="text-orange-400">Orange</span> = 17–24</span>
+        <span><span className="text-yellow-400">Yellow</span> = 9â€“16</span>
+        <span><span className="text-orange-400">Orange</span> = 17â€“24</span>
         <span><span className="text-red-400">Red</span> = Bottom 8 / negative</span>
         <span className="ml-auto">
           FPI = Football Power Index (ESPN). Higher is better.
