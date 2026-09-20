@@ -122,3 +122,8 @@ def _dt(s):
 def _remap(a): return _REMAP.get(a,a)
 
 
+
+# Aliases for test compatibility
+_normalise_status = _norm
+_parse_date = _dt
+_team_injury_impact = _impact
