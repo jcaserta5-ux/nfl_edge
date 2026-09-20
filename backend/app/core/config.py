@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "https://nfl-edge.vercel.app",
+        "https://jcaserta5-ux.github.io",
     ]
 
     class Config:
