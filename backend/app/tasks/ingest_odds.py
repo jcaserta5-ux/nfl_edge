@@ -85,10 +85,16 @@ async def _persist_odds(games: list[dict], season: int) -> int:
 def _parse_dt(s: str) -> datetime | None:
     if not s:
         return None
+    try:
+        # Python 3.11+ fromisoformat handles T17:00Z (no seconds) natively
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        return dt.replace(tzinfo=None)  # naive UTC — DB is TIMESTAMP WITHOUT TIME ZONE
+    except ValueError:
+        pass
     for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"):
         try:
-            dt = datetime.strptime(s.replace("Z", "+00:00") if s.endswith("Z") else s, fmt)
-            return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+            dt = datetime.strptime(s, fmt)
+            return dt.replace(tzinfo=None)  # naive UTC — DB is TIMESTAMP WITHOUT TIME ZONE
         except ValueError:
             continue
     return None
@@ -102,7 +108,7 @@ def _week_from_game_time(dt: datetime) -> int:
     """
     # Week 1 starts ~Sept 5–11. Each week = 7 days.
     import math
-    season_start = datetime(dt.year, 9, 7, tzinfo=timezone.utc)  # approx
+    season_start = datetime(dt.year, 9, 7)  # naive UTC, matches naive game_time
     delta = (dt - season_start).days
     return max(1, min(22, math.ceil((delta + 1) / 7)))
 
@@ -127,3 +133,13 @@ def run_line_movement_ingestion(self, event_id: str, provider_id: str = "1002"):
         raise self.retry(exc=exc, countdown=30)
     finally:
         loop.close()
+
+
+async def _ingest(season: int, week: int) -> dict:
+    """Async entry point for direct invocation and testing."""
+    games = await fetch_espn_scoreboard_odds(season=season, week=week)
+    if not games:
+        logger.warning("No games returned for season=%d week=%d", season, week)
+        return {"status": "empty", "fetched": 0, "saved": 0}
+    saved = await _persist_odds(games, season)
+    return {"status": "ok", "fetched": len(games), "saved": saved}

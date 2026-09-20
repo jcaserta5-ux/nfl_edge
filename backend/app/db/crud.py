@@ -112,7 +112,7 @@ async def save_odds_snapshot(db: AsyncSession, game_id: int, data: dict) -> Odds
     snap = OddsSnapshot(
         game_id=game_id,
         source=data.get("source", "draftkings"),
-        captured_at=datetime.now(timezone.utc),
+        captured_at=datetime.utcnow(),
         home_spread=data.get("home_spread"),
         away_spread=data.get("away_spread"),
         home_spread_juice=data.get("home_spread_juice"),
@@ -194,7 +194,7 @@ async def save_weather_reading(
     reading = WeatherReading(
         game_id=game_id,
         forecast_for=forecast_for,
-        captured_at=datetime.now(timezone.utc),
+        captured_at=datetime.utcnow(),
         temp_f=data.get("temp_f"),
         wind_mph=data.get("wind_mph"),
         wind_dir_deg=data.get("wind_dir_deg"),
@@ -261,7 +261,7 @@ async def upsert_power_ranking(
         ranking.points_against  = data.get("points_against", ranking.points_against)
         ranking.point_diff      = data.get("point_diff", ranking.point_diff)
         ranking.source          = data.get("source", ranking.source)
-        ranking.captured_at     = datetime.now(timezone.utc)
+        ranking.captured_at     = datetime.utcnow()
     else:
         ranking = PowerRanking(
             team_id=team_id,
@@ -279,7 +279,7 @@ async def upsert_power_ranking(
             points_against=data.get("points_against"),
             point_diff=data.get("point_diff"),
             source=data.get("source", "fpi"),
-            captured_at=datetime.now(timezone.utc),
+            captured_at=datetime.utcnow(),
         )
         db.add(ranking)
 
@@ -351,7 +351,7 @@ async def save_injury_reports(
         await db.commit()
         return 0
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     for rec in records:
         inj = InjuryReport(
             team_id=team_id,
@@ -399,7 +399,7 @@ async def save_edge_score(
 ) -> EdgeScore:
     score = EdgeScore(
         game_id=game_id,
-        calculated_at=datetime.now(timezone.utc),
+        calculated_at=datetime.utcnow(),
         line_move_score=result_obj.line_move_score,
         sharp_money_score=result_obj.sharp_money_score,
         weather_impact_score=result_obj.weather_impact_score,

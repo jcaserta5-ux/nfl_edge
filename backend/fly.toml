@@ -3,10 +3,6 @@ primary_region = "iad"
 kill_signal = "SIGINT"
 kill_timeout = "5s"
 
-[build]
-  dockerfile = "backend/Dockerfile"
-  build_context = "backend"
-
 [env]
   PORT = "8000"
   DEBUG = "false"
@@ -18,11 +14,6 @@ kill_timeout = "5s"
   auto_start_machines = true
   min_machines_running = 1
   processes = ["app"]
-
-  [http_service.concurrency]
-    type = "connections"
-    hard_limit = 100
-    soft_limit = 80
 
 [[vm]]
   cpu_kind = "shared"
