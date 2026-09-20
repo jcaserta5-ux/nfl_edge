@@ -1,0 +1,201 @@
+import clsx from 'clsx';
+import { Wind, Thermometer, Droplets, TrendingUp, Zap, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+interface Props {
+  game: any;
+}
+
+const confidenceColors: Record<string, string> = {
+  high:   'border-yellow-500 bg-yellow-500/10',
+  medium: 'border-blue-500 bg-blue-500/10',
+  low:    'border-gray-700 bg-gray-900',
+};
+
+const recommendationLabels: Record<string, string> = {
+  home_spread: '🏠 Home Spread',
+  away_spread: '✈️ Away Spread',
+  over:        '📈 Over',
+  under:       '📉 Under',
+  investigate: '🔍 Investigate',
+  none:        '',
+};
+
+/** Return a short rank label like "#3" or "" */
+function rankBadge(rank?: number): string {
+  return rank ? `#${rank}` : '';
+}
+
+/** Status priority color for injury indicators */
+function injuryDotColor(status?: string | null): string {
+  if (!status) return '';
+  if (status === 'Out' || status === 'IR') return 'bg-red-500';
+  if (status === 'Doubtful') return 'bg-orange-500';
+  if (status === 'Questionable') return 'bg-yellow-500';
+  return 'bg-gray-500';
+}
+
+export function GameCard({ game }: Props) {
+  const edge    = game.edge ?? {};
+  const odds    = game.odds ?? {};
+  const weather = game.weather ?? {};
+  const homeRank = game.home_ranking ?? {};
+  const awayRank = game.away_ranking ?? {};
+  const injSummary = game.injury_summary ?? {};
+  const homeInj = injSummary.home ?? {};
+  const awayInj = injSummary.away ?? {};
+
+  const confidence = edge.confidence ?? 'low';
+  const rec        = edge.recommendation ?? 'none';
+
+  const showHomeQbAlert = homeInj.qb_status && homeInj.qb_status !== 'Probable';
+  const showAwayQbAlert = awayInj.qb_status && awayInj.qb_status !== 'Probable';
+  const homeOutCount    = (homeInj.out ?? 0) + (homeInj.doubtful ?? 0);
+  const awayOutCount    = (awayInj.out ?? 0) + (awayInj.doubtful ?? 0);
+
+  return (
+    <Link to={`/games/${game.id}`}>
+      <div
+        className={clsx(
+          'rounded-xl border p-4 hover:scale-[1.01] transition-transform cursor-pointer',
+          confidenceColors[confidence] ?? 'border-gray-700 bg-gray-900'
+        )}
+      >
+        {/* Teams + power rank badges */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-center flex-1">
+            <div className="text-2xl font-black">{game.away_team}</div>
+            <div className="text-xs text-gray-400">AWAY</div>
+            {awayRank.overall_rank && (
+              <div className="text-xs text-cyan-400 font-semibold mt-0.5">
+                {rankBadge(awayRank.overall_rank)} FPI
+              </div>
+            )}
+          </div>
+
+          <div className="text-gray-500 text-sm font-semibold px-3">@</div>
+
+          <div className="text-center flex-1">
+            <div className="text-2xl font-black">{game.home_team}</div>
+            <div className="text-xs text-gray-400">HOME</div>
+            {homeRank.overall_rank && (
+              <div className="text-xs text-cyan-400 font-semibold mt-0.5">
+                {rankBadge(homeRank.overall_rank)} FPI
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Injury alert row — only show when notable */}
+        {(showAwayQbAlert || showHomeQbAlert || homeOutCount >= 2 || awayOutCount >= 2) && (
+          <div className="flex items-center gap-2 text-xs mb-3 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+            <div className="flex gap-3 flex-wrap">
+              {showAwayQbAlert && (
+                <span className="flex items-center gap-1">
+                  <span className={clsx('w-2 h-2 rounded-full', injuryDotColor(awayInj.qb_status))} />
+                  <span className="text-gray-300">{game.away_team} QB {awayInj.qb_status}</span>
+                </span>
+              )}
+              {showHomeQbAlert && (
+                <span className="flex items-center gap-1">
+                  <span className={clsx('w-2 h-2 rounded-full', injuryDotColor(homeInj.qb_status))} />
+                  <span className="text-gray-300">{game.home_team} QB {homeInj.qb_status}</span>
+                </span>
+              )}
+              {!showAwayQbAlert && awayOutCount >= 2 && (
+                <span className="text-orange-400">{game.away_team} −{awayOutCount} starters</span>
+              )}
+              {!showHomeQbAlert && homeOutCount >= 2 && (
+                <span className="text-orange-400">{game.home_team} −{homeOutCount} starters</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Odds row */}
+        <div className="grid grid-cols-3 gap-2 text-center mb-3">
+          <div className="bg-black/30 rounded-lg p-2">
+            <div className="text-xs text-gray-500 mb-0.5">Spread</div>
+            <div className="text-sm font-mono font-bold">
+              {odds.home_spread != null
+                ? `${odds.home_spread > 0 ? '+' : ''}${odds.home_spread}`
+                : '—'}
+            </div>
+          </div>
+          <div className="bg-black/30 rounded-lg p-2">
+            <div className="text-xs text-gray-500 mb-0.5">Total</div>
+            <div className="text-sm font-mono font-bold">{odds.total ?? '—'}</div>
+          </div>
+          <div className="bg-black/30 rounded-lg p-2">
+            <div className="text-xs text-gray-500 mb-0.5">ML</div>
+            <div className="text-sm font-mono font-bold">
+              {odds.home_ml != null
+                ? `${odds.home_ml > 0 ? '+' : ''}${odds.home_ml}`
+                : '—'}
+            </div>
+          </div>
+        </div>
+
+        {/* Public money bar */}
+        {odds.home_spread_pct != null && (
+          <div className="mb-3">
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <span>{game.away_team} {(100 - odds.home_spread_pct).toFixed(0)}%</span>
+              <span className="text-gray-500">Bets</span>
+              <span>{game.home_team} {odds.home_spread_pct.toFixed(0)}%</span>
+            </div>
+            <div className="h-2 bg-gray-700 rounded-full overflow-hidden flex">
+              <div className="bg-red-500 h-full"
+                   style={{ width: `${100 - odds.home_spread_pct}%` }} />
+              <div className="bg-emerald-500 h-full"
+                   style={{ width: `${odds.home_spread_pct}%` }} />
+            </div>
+          </div>
+        )}
+
+        {/* Weather strip */}
+        {weather.wind_mph != null && (
+          <div className="flex gap-3 text-xs text-gray-400 mb-3">
+            <span className="flex items-center gap-1">
+              <Wind className="w-3 h-3" /> {weather.wind_mph?.toFixed(0)} mph
+            </span>
+            <span className="flex items-center gap-1">
+              <Thermometer className="w-3 h-3" /> {weather.temp_f?.toFixed(0)}°F
+            </span>
+            {(weather.precip_mm ?? 0) > 0 && (
+              <span className="flex items-center gap-1">
+                <Droplets className="w-3 h-3" /> {weather.precip_mm?.toFixed(1)} mm
+              </span>
+            )}
+            <span className="ml-auto text-gray-500">{weather.condition_desc}</span>
+          </div>
+        )}
+
+        {/* Edge score + recommendation */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            <span className="text-sm font-bold text-yellow-300">
+              {edge.composite_score?.toFixed(0) ?? 0}
+            </span>
+            <span className="text-xs text-gray-500">edge score</span>
+          </div>
+          {rec && rec !== 'none' && (
+            <span className="text-xs font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-full px-2 py-0.5">
+              {recommendationLabels[rec] ?? rec}
+            </span>
+          )}
+        </div>
+
+        {/* Game time */}
+        <div className="mt-2 text-xs text-gray-600 text-right">
+          {game.game_time ? new Date(game.game_time).toLocaleString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+          }) : ''}
+        </div>
+      </div>
+    </Link>
+  );
+}
