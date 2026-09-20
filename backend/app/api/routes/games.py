@@ -232,7 +232,7 @@ def _serialize_game(g) -> dict:
         "id":          g.id,
         "season":      g.season,
         "week":        g.week,
-        "game_time":   g.game_time.isoformat() if g.game_time else None,
+        "game_time":   (g.game_time.isoformat() + "Z") if g.game_time else None,
         "home_team":   g.home_team.abbreviation if g.home_team else None,
         "away_team":   g.away_team.abbreviation if g.away_team else None,
         "home_score":  g.home_score,
@@ -413,3 +413,4 @@ def _serialize_injury_summary(home_injuries, away_injuries) -> dict:
         "home": _summarise(home_injuries),
         "away": _summarise(away_injuries),
     }
+

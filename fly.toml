@@ -5,7 +5,7 @@ kill_timeout = "5s"
 
 [build]
   dockerfile = "backend/Dockerfile"
-  build_context = "backend"
+  context = "backend"
 
 [env]
   PORT = "8000"

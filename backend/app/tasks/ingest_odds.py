@@ -73,6 +73,16 @@ async def _persist_odds(games: list[dict], season: int) -> int:
                 if not game:
                     continue
 
+                # Update live score + status
+                new_status = g.get("game_status")
+                if new_status and new_status != "scheduled":
+                    game.status = new_status
+                if g.get("home_score") is not None:
+                    game.home_score = g["home_score"]
+                if g.get("away_score") is not None:
+                    game.away_score = g["away_score"]
+                await db.commit()
+
                 await save_odds_snapshot(db, game.id, g)
                 saved += 1
 
@@ -143,3 +153,4 @@ async def _ingest(season: int, week: int) -> dict:
         return {"status": "empty", "fetched": 0, "saved": 0}
     saved = await _persist_odds(games, season)
     return {"status": "ok", "fetched": len(games), "saved": saved}
+

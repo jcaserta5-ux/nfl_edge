@@ -1,5 +1,5 @@
-﻿"""
-Injury Adapter – ESPN Core API (sports.core.api.espn.com).
+"""
+Injury Adapter � ESPN Core API (sports.core.api.espn.com).
 Fetches per-team injuries concurrently; follows $ref URLs for full records.
 """
 from __future__ import annotations
@@ -97,11 +97,11 @@ def compute_injury_impact(home, away):
     net = _impact(away) - _impact(home)
     score = min(abs(net)/8.0*100, 100)
     notes = []
-    for side, injuries, label in [(home,"home"),(away,"away")]:
+    for injuries, label in [(home,"home"),(away,"away")]:
         qb_out = next((i for i in injuries if i["is_qb"] and i["status"] in ("Out","Doubtful")), None)
         qb_q   = next((i for i in injuries if i["is_qb"] and i["status"]=="Questionable"), None)
-        if qb_out: notes.append(f"🚨 {qb_out['athlete_name']} ({qb_out['status']}) – {label} QB")
-        elif qb_q: notes.append(f"⚠️ {qb_q['athlete_name']} (Questionable) – {label} QB watch")
+        if qb_out: notes.append(f"?? {qb_out['athlete_name']} ({qb_out['status']}) � {label} QB")
+        elif qb_q: notes.append(f"?? {qb_q['athlete_name']} (Questionable) � {label} QB watch")
         ko = sum(1 for i in injuries if i["is_key_player"] and i["status"] in ("Out","Doubtful"))
         if ko >= 2: notes.append(f"{label.capitalize()} missing {ko} key players")
     return round(score,1), notes
@@ -120,3 +120,5 @@ def _dt(s):
     try: return datetime.fromisoformat(s.replace("Z","+00:00")).astimezone(timezone.utc).replace(tzinfo=None)
     except: return None
 def _remap(a): return _REMAP.get(a,a)
+
+

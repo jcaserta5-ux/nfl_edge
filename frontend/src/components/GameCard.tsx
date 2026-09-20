@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import { Wind, Thermometer, Droplets, TrendingUp, Zap, AlertTriangle } from 'lucide-react';
+﻿import clsx from 'clsx';
+import { Wind, Thermometer, Droplets, Zap, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -21,12 +21,10 @@ const recommendationLabels: Record<string, string> = {
   none:        '',
 };
 
-/** Return a short rank label like "#3" or "" */
 function rankBadge(rank?: number): string {
   return rank ? `#${rank}` : '';
 }
 
-/** Status priority color for injury indicators */
 function injuryDotColor(status?: string | null): string {
   if (!status) return '';
   if (status === 'Out' || status === 'IR') return 'bg-red-500';
@@ -35,15 +33,19 @@ function injuryDotColor(status?: string | null): string {
   return 'bg-gray-500';
 }
 
+function espnLogo(abbr: string): string {
+  return `https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/${abbr.toLowerCase()}.png&h=64&w=64`;
+}
+
 export function GameCard({ game }: Props) {
-  const edge    = game.edge ?? {};
-  const odds    = game.odds ?? {};
-  const weather = game.weather ?? {};
-  const homeRank = game.home_ranking ?? {};
-  const awayRank = game.away_ranking ?? {};
+  const edge       = game.edge ?? {};
+  const odds       = game.odds ?? {};
+  const weather    = game.weather ?? {};
+  const homeRank   = game.home_ranking ?? {};
+  const awayRank   = game.away_ranking ?? {};
   const injSummary = game.injury_summary ?? {};
-  const homeInj = injSummary.home ?? {};
-  const awayInj = injSummary.away ?? {};
+  const homeInj    = injSummary.home ?? {};
+  const awayInj    = injSummary.away ?? {};
 
   const confidence = edge.confidence ?? 'low';
   const rec        = edge.recommendation ?? 'none';
@@ -53,6 +55,10 @@ export function GameCard({ game }: Props) {
   const homeOutCount    = (homeInj.out ?? 0) + (homeInj.doubtful ?? 0);
   const awayOutCount    = (awayInj.out ?? 0) + (awayInj.doubtful ?? 0);
 
+  const isLive   = game.status === 'live';
+  const isFinal  = game.status === 'final';
+  const hasScore = game.home_score != null && game.away_score != null;
+
   return (
     <Link to={`/games/${game.id}`}>
       <div
@@ -61,11 +67,31 @@ export function GameCard({ game }: Props) {
           confidenceColors[confidence] ?? 'border-gray-700 bg-gray-900'
         )}
       >
-        {/* Teams + power rank badges */}
+        {/* Live / Final badge */}
+        {(isLive || isFinal) && (
+          <div className="flex justify-center mb-2">
+            <span className={clsx(
+              'text-xs font-bold px-2 py-0.5 rounded-full',
+              isLive
+                ? 'bg-green-500/20 text-green-400 border border-green-500/40 animate-pulse'
+                : 'bg-gray-700 text-gray-400 border border-gray-600'
+            )}>
+              {isLive ? '● LIVE' : 'FINAL'}
+            </span>
+          </div>
+        )}
+
+        {/* Teams row */}
         <div className="flex items-center justify-between mb-3">
           <div className="text-center flex-1">
-            <div className="text-2xl font-black">{game.away_team}</div>
-            <div className="text-xs text-gray-400">AWAY</div>
+            <img
+              src={espnLogo(game.away_team)}
+              alt={game.away_team}
+              className="w-12 h-12 mx-auto mb-1 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="text-xl font-black">{game.away_team}</div>
+            <div className="text-xs text-gray-500 font-semibold tracking-widest">(A)</div>
             {awayRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">
                 {rankBadge(awayRank.overall_rank)} FPI
@@ -73,11 +99,37 @@ export function GameCard({ game }: Props) {
             )}
           </div>
 
-          <div className="text-gray-500 text-sm font-semibold px-3">@</div>
+          <div className="text-center px-2 min-w-[80px]">
+            {hasScore ? (
+              <div className="flex items-center justify-center gap-2">
+                <span className={clsx(
+                  'text-2xl font-black tabular-nums',
+                  isFinal && game.away_score > game.home_score ? 'text-white' : 'text-gray-400'
+                )}>
+                  {game.away_score}
+                </span>
+                <span className="text-gray-600 text-lg">–</span>
+                <span className={clsx(
+                  'text-2xl font-black tabular-nums',
+                  isFinal && game.home_score > game.away_score ? 'text-white' : 'text-gray-400'
+                )}>
+                  {game.home_score}
+                </span>
+              </div>
+            ) : (
+              <div className="text-gray-500 text-sm font-semibold">@</div>
+            )}
+          </div>
 
           <div className="text-center flex-1">
-            <div className="text-2xl font-black">{game.home_team}</div>
-            <div className="text-xs text-gray-400">HOME</div>
+            <img
+              src={espnLogo(game.home_team)}
+              alt={game.home_team}
+              className="w-12 h-12 mx-auto mb-1 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="text-xl font-black">{game.home_team}</div>
+            <div className="text-xs text-gray-500 font-semibold tracking-widest">(H)</div>
             {homeRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">
                 {rankBadge(homeRank.overall_rank)} FPI
@@ -86,7 +138,7 @@ export function GameCard({ game }: Props) {
           </div>
         </div>
 
-        {/* Injury alert row — only show when notable */}
+        {/* Injury alert row */}
         {(showAwayQbAlert || showHomeQbAlert || homeOutCount >= 2 || awayOutCount >= 2) && (
           <div className="flex items-center gap-2 text-xs mb-3 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
             <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
@@ -94,13 +146,13 @@ export function GameCard({ game }: Props) {
               {showAwayQbAlert && (
                 <span className="flex items-center gap-1">
                   <span className={clsx('w-2 h-2 rounded-full', injuryDotColor(awayInj.qb_status))} />
-                  <span className="text-gray-300">{game.away_team} QB {awayInj.qb_status}</span>
+                  <span className="text-gray-300">{game.away_team} QB: {awayInj.qb_status}</span>
                 </span>
               )}
               {showHomeQbAlert && (
                 <span className="flex items-center gap-1">
                   <span className={clsx('w-2 h-2 rounded-full', injuryDotColor(homeInj.qb_status))} />
-                  <span className="text-gray-300">{game.home_team} QB {homeInj.qb_status}</span>
+                  <span className="text-gray-300">{game.home_team} QB: {homeInj.qb_status}</span>
                 </span>
               )}
               {!showAwayQbAlert && awayOutCount >= 2 && (
@@ -146,10 +198,8 @@ export function GameCard({ game }: Props) {
               <span>{game.home_team} {odds.home_spread_pct.toFixed(0)}%</span>
             </div>
             <div className="h-2 bg-gray-700 rounded-full overflow-hidden flex">
-              <div className="bg-red-500 h-full"
-                   style={{ width: `${100 - odds.home_spread_pct}%` }} />
-              <div className="bg-emerald-500 h-full"
-                   style={{ width: `${odds.home_spread_pct}%` }} />
+              <div className="bg-red-500 h-full" style={{ width: `${100 - odds.home_spread_pct}%` }} />
+              <div className="bg-emerald-500 h-full" style={{ width: `${odds.home_spread_pct}%` }} />
             </div>
           </div>
         )}
@@ -188,12 +238,16 @@ export function GameCard({ game }: Props) {
           )}
         </div>
 
-        {/* Game time */}
+        {/* Game time — forced ET */}
         <div className="mt-2 text-xs text-gray-600 text-right">
-          {game.game_time ? new Date(game.game_time).toLocaleString('en-US', {
-            weekday: 'short', month: 'short', day: 'numeric',
-            hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-          }) : ''}
+          {game.game_time
+            ? new Date(game.game_time).toLocaleString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric',
+                hour: 'numeric', minute: '2-digit',
+                timeZone: 'America/New_York',
+                timeZoneName: 'short',
+              })
+            : ''}
         </div>
       </div>
     </Link>

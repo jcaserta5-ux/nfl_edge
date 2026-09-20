@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select, desc, and_, delete
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import (
@@ -95,7 +96,7 @@ async def get_games_for_week(
 ) -> list[NFLGame]:
     result = await db.execute(
         select(NFLGame)
-        .where(NFLGame.season == season, NFLGame.week == week)
+        .options(selectinload(NFLGame.home_team), selectinload(NFLGame.away_team)).where(NFLGame.season == season, NFLGame.week == week)
         .order_by(NFLGame.game_time)
     )
     return list(result.scalars().all())
