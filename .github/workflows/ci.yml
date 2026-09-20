@@ -57,13 +57,14 @@ jobs:
 
       - name: Run tests
         env:
+          PYTHONPATH: .
           DATABASE_URL: postgresql://nfledge:testpass@localhost:5432/nfledge_test
           ASYNC_DATABASE_URL: postgresql+asyncpg://nfledge:testpass@localhost:5432/nfledge_test
           SECRET_KEY: ci-test-secret-key-32-chars-long!!
           REDIS_URL: redis://localhost:6379/0
           CELERY_BROKER_URL: redis://localhost:6379/1
           CELERY_RESULT_BACKEND: redis://localhost:6379/2
-          PYTHONPATH: .`n        run: pytest tests/ -v --tb=short
+        run: pytest tests/ -v --tb=short
 
   frontend-lint:
     name: Frontend Lint & Build
@@ -100,6 +101,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
 
