@@ -178,13 +178,32 @@ ESPN_INJURY_SAMPLE = {
 
 @pytest.mark.asyncio
 async def test_fetch_injuries_parses_response():
+    # Items in ESPN Core API format: inline athlete + dict status so _parse works
+    mock_items = [
+        {
+            "athlete": {"id": "3139477", "fullName": "Patrick Mahomes",
+                        "position": {"abbreviation": "QB"}, "jersey": "15"},
+            "status": {"name": "Questionable"},
+            "type": {"description": "Ankle"},
+            "date": "2026-09-18T00:00:00Z",
+        },
+        {
+            "athlete": {"id": "1111111", "fullName": "Travis Kelce",
+                        "position": {"abbreviation": "TE"}, "jersey": "87"},
+            "status": {"name": "Out"},
+            "type": {"description": "Knee"},
+            "date": "2026-09-17T00:00:00Z",
+        },
+    ]
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
-    mock_resp.json = MagicMock(return_value=ESPN_INJURY_SAMPLE)
+    mock_resp.json = MagicMock(return_value={"items": mock_items})
 
-    with patch("app.ingestion.injury_adapter.httpx.AsyncClient") as mock_cls:
-        mock_cls.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_resp)
-        records = await fetch_injuries()
+    with patch("app.ingestion.injury_adapter._get_teams",
+               new=AsyncMock(return_value=[{"id": "12", "abbreviation": "KC"}])):
+        with patch("app.ingestion.injury_adapter.httpx.AsyncClient") as mock_cls:
+            mock_cls.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_resp)
+            records = await fetch_injuries()
 
     assert len(records) == 2
 
