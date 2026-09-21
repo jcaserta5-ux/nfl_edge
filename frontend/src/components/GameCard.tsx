@@ -117,7 +117,7 @@ export function GameCard({ game }: Props) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="text-xl font-black">{game.away_team}</div>
-            <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase bg-gray-800 rounded px-1.5 py-0.5 inline-block mt-0.5">Away</div>
+            <div className="text-[10px] font-bold tracking-widest text-white uppercase bg-blue-600 rounded px-1.5 py-0.5 inline-block mt-0.5">Away</div>
             {awayRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">{rankBadge(awayRank.overall_rank)} FPI</div>
             )}
@@ -151,7 +151,7 @@ export function GameCard({ game }: Props) {
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="text-xl font-black">{game.home_team}</div>
-            <div className="text-[10px] font-bold tracking-widest text-gray-500 uppercase bg-gray-800 rounded px-1.5 py-0.5 inline-block mt-0.5">Home</div>
+            <div className="text-[10px] font-bold tracking-widest text-white uppercase bg-blue-600 rounded px-1.5 py-0.5 inline-block mt-0.5">Home</div>
             {homeRank.overall_rank && (
               <div className="text-xs text-cyan-400 font-semibold mt-0.5">{rankBadge(homeRank.overall_rank)} FPI</div>
             )}
