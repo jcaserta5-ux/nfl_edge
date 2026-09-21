@@ -93,7 +93,6 @@ export function GameCard({ game }: Props) {
         )}
       >
         {/* ── Live / Final badge ───────────────────────────── */}
-        <div style={{background:"red",color:"white",textAlign:"center",padding:"4px",fontWeight:"bold",fontSize:"12px",borderRadius:"6px",marginBottom:"8px"}}>NEW BUNDLE ACTIVE</div>
         {(isLive || isFinal) && (
           <div className="flex justify-center mb-2">
             <span className={clsx(
