@@ -178,7 +178,6 @@ ESPN_INJURY_SAMPLE = {
 
 @pytest.mark.asyncio
 async def test_fetch_injuries_parses_response():
-    # Inline items in ESPN Core API format: athlete dict + status dict so _parse works
     mock_items = [
         {
             "athlete": {"id": "3139477", "fullName": "Patrick Mahomes",
@@ -199,6 +198,23 @@ async def test_fetch_injuries_parses_response():
     mock_resp.raise_for_status = MagicMock()
     mock_resp.json = MagicMock(return_value={"items": mock_items})
 
+    with patch("app.ingestion.injury_adapter._get_teams",
+               new=AsyncMock(return_value=[{"id": "12", "abbreviation": "KC"}])):
+        with patch("app.ingestion.injury_adapter.httpx.AsyncClient") as mock_cls:
+            mock_cls.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_resp)
+            records = await fetch_injuries()
+
+    assert len(records) == 2
+    mahomes = next(r for r in records if r["athlete_name"] == "Patrick Mahomes")
+    assert mahomes["team_abbreviation"] == "KC"
+    assert mahomes["position"] == "QB"
+    assert mahomes["status"] == "Questionable"
+    assert mahomes["is_qb"] is True
+    assert mahomes["is_key_player"] is True
+    kelce = next(r for r in records if r["athlete_name"] == "Travis Kelce")
+    assert kelce["status"] == "Out"
+    assert kelce["is_qb"] is False
+    assert kelce["is_key_player"] is True
     with patch("app.ingestion.injury_adapter._get_teams",
                new=AsyncMock(return_value=[{"id": "12", "abbreviation": "KC"}])):
         with patch("app.ingestion.injury_adapter.httpx.AsyncClient") as mock_cls:
